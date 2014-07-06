@@ -17,35 +17,26 @@ module Termlib
         :id => {
           :exec => "this.type this.id", 
           :help => "show terminal id"
-        },
-        :offset => {
-          "\n    " => [:clear, :exit, :id]
         }
       }
 
       protected
 
-      def define_command(o)
-        @@term_commands[o[:key]][:exec] = o[:exec]
-        @@term_commands[o[:key]][:help] = o[:help]
-        @@term_commands[:offset]["\n    "].push o[:key]
+      def define_commands(o)
+        o.each_pair{|k, v|
+          @@term_commands[k] = v
+        }
       end
 
       def hook_commands
         src = ""
         help = "this.write(["
-        @@term_commands[:offset].each_pair{|k, v| 
-          v.each{|e|
-            commands.each_pair{|key, value|
-              if key == e and  key != :offset
-                src << "#{k}if cmd=='#{key}'#{k}  #{value[:exec]}"
-                help << "'#{key} ... #{value[:help]}',"
-              end
-            }
-          }
+        @@term_commands.each_pair{|key, value|
+          src << "#\n    if cmd=='#{key}'\n      #{value[:exec]}"
+          help << "'#{key} ... #{value[:help]}',"  
         }
         help << "])\n"
-        src << "\n    if cmd=='help'\n        #{help}"
+        src << "\n    if cmd=='help'\n      #{help}"
       end
 
     end

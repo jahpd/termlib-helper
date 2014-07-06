@@ -1,3 +1,4 @@
+require "termlib/helper/version"
 require "termlib/base"
 
 module Termlib
@@ -5,16 +6,17 @@ module Termlib
     module Builder
 
       include Base
+      include ActionView::Helpers::JavaScriptHelper
 
-      def build(opt)
-        opt[:custom_commands].each{|e| define_command(e)} if opt[:custom_commands]
+      def termlib(opt)
+       define_commands(opt[:custom_commands]) if opt[:custom_commands]
 
-        """term =  window.terminal = new Terminal
+        string = """term =  window.terminal = new Terminal
   rows: #{opt[:rows]}
   ps: '$ >'
   greeting: '#{opt[:id]} Terminal ready'
-  id: '_#{opt[:id]}'
-  termDiv: 'term_#{opt[:id]}'
+  id: '#{opt[:id]}_#{Time.now}'
+  termDiv: '#{opt[:id]}'
   crsrBlinkMode: true
   handler: ->
     this.newLine()
@@ -32,13 +34,17 @@ onHover =
     TermGlobals.keylock = true
     window.editor.focus()
 
-onExit = terminal: -> TermGlobals.setFocus false, editor: -> window.editor.blur()
+onExit = 
+  terminal: -> TermGlobals.setFocus false
+  editor: -> window.editor.blur()
 
-$('#term_#{opt[:id]}').hover onHover.terminal, onExit.terminal
+$('##{opt[:id]}').hover onHover.terminal, onExit.terminal
 
-$('#coffee_editor').hover onHover.editor, onExit.editor
+$('##{opt[:editor]}').hover onHover.editor, onExit.editor
 
 term.open()"""
+        js = CoffeeScript.compile(string, :bare => true)
+        javascript_tag(js)
       end
 
     end
