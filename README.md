@@ -26,6 +26,8 @@ In your helpers, import:
 
 and use in your own functions:
 
+    include Termlib::Helper::Builder
+    
     def create_terminal(opt)
       js = termlib(opt)
       content_tag(:div, js, :id => opt[:id])
